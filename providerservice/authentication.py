@@ -13,4 +13,4 @@ class ServiceProviderJWTAuthentication(JWTAuthentication):
         except ServiceProvider.DoesNotExist:
             raise AuthenticationFailed("ServiceProvider not found.")
 
-        return provider  # This is returned as `request.user`
+        return provider

@@ -9,8 +9,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/customers/', include('customers.urls')),        # Customer-related API
-    path('api/admin/', include('adminManage.urls')),  # Admin-related API
+    path('api/customers/', include('customers.urls')),
+    path('api/admin/', include('adminManage.urls')),
     path('api/category/', include('category.urls')),
     path('api/service/', include('service.urls')),
     path('api/serviceprovider/', include('serviceprovider.urls')),

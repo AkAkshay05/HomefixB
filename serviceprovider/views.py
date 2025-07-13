@@ -10,6 +10,7 @@ class ServiceProviderListCreateView(generics.ListCreateAPIView):
 class ServiceProviderDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ServiceProvider.objects.all()
     serializer_class = ServiceProviderSerializer
+    # permission_classes = [permissions.IsAuthenticated]
 
 
 from rest_framework.views import APIView

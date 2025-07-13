@@ -6,6 +6,10 @@ from .serializers import ServiceRequestSerializer
 from customers.models import Customer
 from rest_framework_simplejwt.exceptions import InvalidToken
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
 
 class CustomerJWTAuthentication(JWTAuthentication):
     def get_user(self, validated_token):
@@ -35,8 +39,17 @@ class ServiceRequestListCreateView(generics.ListCreateAPIView):
 class ServiceRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ServiceRequest.objects.all()
     serializer_class = ServiceRequestSerializer
-    authentication_classes = [CustomerJWTAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    # authentication_classes = [CustomerJWTAuthentication]
+    # permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        return ServiceRequest.objects.filter(customer=self.request.user)
+    # def get_queryset(self):
+    #     return ServiceRequest.objects.filter(customer=self.request.user)
+
+
+
+
+class ProviderServiceRequestsView(APIView):
+    def get(self, request, provider_id):
+        requests = ServiceRequest.objects.filter(provider_id=provider_id)
+        serializer = ServiceRequestSerializer(requests, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
