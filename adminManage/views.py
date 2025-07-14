@@ -9,6 +9,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Admin
 from .serializers import AdminSerializer
 
+
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+
 class AdminRegisterView(APIView):
     def post(self, request):
         serializer = AdminSerializer(data=request.data)
@@ -39,3 +43,22 @@ class AdminDetailView(APIView):
         admin = request.user
         serializer = AdminSerializer(admin)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+
+class AdminLogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh_token"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response({"message": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT)
+
+        except KeyError:
+            return Response({"error": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
+        except TokenError:
+            return Response({"error": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
