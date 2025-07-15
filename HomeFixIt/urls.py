@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/serviceprovider/', include('serviceprovider.urls')),
     path('api/provider-services/', include('providerservice.urls')),
     path('api/service-requests/', include('servicerequest.urls')),
+    path('api/invoices/', include('invoice.urls')),
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
