@@ -5,11 +5,27 @@ from customers.serializers import CustomerSerializer
 from providerservice.serializers import ProviderServiceSerializer
 
 class ServiceRequestSerializer(serializers.ModelSerializer):
-    # customer = CustomerSerializer()
-    # service = ProviderServiceSerializer()
-    # provider = ServiceProviderSerializer()
+    # Optional: Nested read-only serializers for display purposes
+    customer = CustomerSerializer(read_only=True)
+    provider = ServiceProviderSerializer(read_only=True)
+    service = ProviderServiceSerializer(read_only=True)
+
+    # Accept only the IDs for provider and service on write
+    provider_id = serializers.PrimaryKeyRelatedField(
+        queryset=ServiceRequest._meta.get_field('provider').related_model.objects.all(),
+        source='provider',
+        write_only=True
+    )
+    service_id = serializers.PrimaryKeyRelatedField(
+        queryset=ServiceRequest._meta.get_field('service').related_model.objects.all(),
+        source='service',
+        write_only=True
+    )
 
     class Meta:
         model = ServiceRequest
-        fields = '__all__'
-        read_only_fields = ['customer']  # Automatically set from the token
+        fields = [
+            'id', 'customer', 'provider', 'provider_id', 'service', 'service_id',
+            'schedule_date', 'status'
+        ]
+        read_only_fields = ['id', 'customer', 'status']
