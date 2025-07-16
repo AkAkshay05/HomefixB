@@ -9,6 +9,9 @@ from django.utils.timezone import now
 from .models import ServiceRequest
 from .serializers import ServiceRequestSerializer
 from customers.models import Customer
+from serviceprovider.models import ServiceProvider
+from rest_framework.permissions import IsAuthenticated
+from serviceprovider.authentication import ProviderJWTAuthentication
 
 # Custom JWT Authentication for Customers
 class CustomerJWTAuthentication(JWTAuthentication):
@@ -57,11 +60,52 @@ class ServiceRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
         return ServiceRequest.objects.filter(customer=self.request.user)
 
 # View to Get All Requests for a Specific Provider
+# class ProviderServiceRequestsView(APIView):
+#     def get(self, request, provider_id):
+#         requests = ServiceRequest.objects.filter(provider_id=provider_id)
+#         if not requests.exists():
+#             return Response({"detail": "No service requests found for this provider."}, status=status.HTTP_404_NOT_FOUND)
+#
+#         serializer = ServiceRequestSerializer(requests, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+
 class ProviderServiceRequestsView(APIView):
-    def get(self, request, provider_id):
-        requests = ServiceRequest.objects.filter(provider_id=provider_id)
+    authentication_classes = [ProviderJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        provider_id = request.auth.get('provider_id')
+
+        if not provider_id:
+            return Response({'detail': 'Invalid token: missing provider_id.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            provider = ServiceProvider.objects.get(id=provider_id)
+        except ServiceProvider.DoesNotExist:
+            return Response({'detail': 'Service provider not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        requests = ServiceRequest.objects.filter(provider=provider)
+
         if not requests.exists():
-            return Response({"detail": "No service requests found for this provider."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'No service requests found for this provider.'}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = ServiceRequestSerializer(requests, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+class CustomerServiceRequestsView(generics.ListCreateAPIView):
+    serializer_class = ServiceRequestSerializer
+    authentication_classes = [CustomerJWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return ServiceRequest.objects.filter(customer=self.request.user).order_by('-created_at')
+
+    # def get_queryset(self):
+    #     # Return only the service requests of the logged-in user
+    #     return ServiceRequest.objects.filter(customer=self.request.user)
+
+    def perform_create(self, serializer):
+        # Automatically associate the request with the logged-in user
+        serializer.save(customer=self.request.user)

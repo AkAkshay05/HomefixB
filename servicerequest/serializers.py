@@ -25,7 +25,20 @@ class ServiceRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceRequest
         fields = [
-            'id', 'customer', 'provider', 'provider_id', 'service', 'service_id',
-            'schedule_date', 'status'
+            'id',
+            'customer',
+            'provider',
+            'service',
+            'provider_id',
+            'service_id',
+            'schedule_date',
+            'schedule_time',
+            'address',
+            'description',
+            'urgency',
+            'notes',
+            'status',
+            'created_at'
         ]
-        read_only_fields = ['id', 'customer', 'status']
+        read_only_fields = ['id', 'customer', 'status', 'created_at', 'provider', 'service']
+

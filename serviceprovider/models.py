@@ -12,6 +12,9 @@ class ServiceProvider(models.Model):
     availability = models.BooleanField(default=True)
     profile_photo = models.ImageField(upload_to='serviceprovider_photos/', null=True, blank=True)  # ✅ New field
 
+    @property
+    def is_authenticated(self):
+        return True
     def __str__(self):
         return self.name
 
