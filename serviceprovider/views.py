@@ -55,7 +55,9 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from datetime import timedelta
 from django.contrib.auth.hashers import check_password
-from .models import ServiceProvider  # Make sure this is your correct model
+from .models import ServiceProvider
+from rest_framework_simplejwt.exceptions import TokenError
+from .authentication import ProviderJWTAuthentication
 
 class ServiceProviderLoginView(APIView):
     def post(self, request):
@@ -84,5 +86,24 @@ class ServiceProviderLoginView(APIView):
             }, status=status.HTTP_200_OK)
 
         return Response({'error': 'Invalid password'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class ServiceProviderLogoutView(APIView):
+    authentication_classes = [ProviderJWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data.get("refresh")
+            if refresh_token is None:
+                return Response({"detail": "Refresh token required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response({"detail": "Logout successful."}, status=status.HTTP_205_RESET_CONTENT)
+
+        except TokenError as e:
+            return Response({"detail": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
 
 
